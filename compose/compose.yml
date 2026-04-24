@@ -1,0 +1,37 @@
+services:
+  caddy:
+    image: caddy:2
+    container_name: wardensmp-caddy
+    restart: unless-stopped
+    depends_on:
+      - crafty
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./data/caddy/data:/data
+      - ./data/caddy/config:/config
+    networks:
+      - wardensmp
+
+  crafty:
+    image: registry.gitlab.com/crafty-controller/crafty-4:latest
+    container_name: wardensmp-crafty
+    restart: unless-stopped
+    environment:
+      - TZ=${TZ}
+    ports:
+      - "25565:25565"
+    volumes:
+      - ./data/crafty/backups:/crafty/backups
+      - ./data/crafty/logs:/crafty/logs
+      - ./data/crafty/servers:/crafty/servers
+      - ./data/crafty/config:/crafty/app/config
+      - ./data/crafty/import:/crafty/import
+    networks:
+      - wardensmp
+
+networks:
+  wardensmp:
+    name: wardensmp

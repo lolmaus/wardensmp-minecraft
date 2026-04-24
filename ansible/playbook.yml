@@ -148,6 +148,52 @@
           - docker
         append: true
 
+    - name: Create stack subdirectories
+      ansible.builtin.file:
+        path: "{{ minecraft_stack_root }}/{{ item }}"
+        state: directory
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+        mode: "0755"
+      loop:
+        - caddy
+        - data/caddy/data
+        - data/caddy/config
+        - data/crafty/backups
+        - data/crafty/logs
+        - data/crafty/servers
+        - data/crafty/config
+        - data/crafty/import
+
+    - name: Copy Docker Compose file
+      ansible.builtin.copy:
+        src: ../compose/compose.yml
+        dest: "{{ minecraft_stack_root }}/compose.yml"
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+        mode: "0644"
+
+    - name: Copy Compose environment file
+      ansible.builtin.template:
+        src: ../compose/.env.example
+        dest: "{{ minecraft_stack_root }}/.env"
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+        mode: "0644"
+
+    - name: Copy Caddyfile
+      ansible.builtin.copy:
+        src: ../caddy/Caddyfile
+        dest: "{{ minecraft_stack_root }}/caddy/Caddyfile"
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+        mode: "0644"
+
+    - name: Start Docker Compose stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ minecraft_stack_root }}"
+        state: present
+
   handlers:
     - name: Restart ssh
       ansible.builtin.service:
