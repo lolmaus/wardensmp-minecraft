@@ -1,0 +1,21 @@
+---
+server_name: wardensmp
+server_timezone: Europe/Moscow
+
+admin_user: deploy
+minecraft_stack_root: /srv/wardensmp
+
+domains:
+  root: wardensmp.lolma.us
+  minecraft: wardensmp.lolma.us
+  website: wardensmp.lolma.us
+  map: wardensmp-map.lolma.us
+  admin: wardensmp-admin.lolma.us
+
+minecraft_port: 25565
+
+allowed_tcp_ports:
+  - 22
+  - 80
+  - 443
+  - "{{ minecraft_port }}"
