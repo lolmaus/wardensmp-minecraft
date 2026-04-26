@@ -14,6 +14,11 @@ domains:
 
 minecraft_port: 25565
 
+minetrax_version: "8.0.0"
+minetrax_app_name: "WardenSMP"
+minetrax_db_name: minetrax
+minetrax_db_user: minetrax
+
 allowed_tcp_ports:
   - 22
   - 80

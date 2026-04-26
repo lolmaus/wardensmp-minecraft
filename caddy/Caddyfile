@@ -1,3 +1,7 @@
+wardensmp.lolma.us {
+	reverse_proxy minetrax:80
+}
+
 wardensmp-admin.lolma.us {
 	reverse_proxy https://crafty:8443 {
 		transport http {
@@ -13,4 +17,8 @@ wardensmp-admin.lolma.us {
 
 		flush_interval -1
 	}
+}
+
+wardensmp-map.lolma.us {
+	reverse_proxy http://crafty:8100
 }

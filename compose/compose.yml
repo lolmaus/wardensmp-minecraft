@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     depends_on:
       - crafty
+      - minetrax
     ports:
       - "80:80"
       - "443:443"
@@ -30,8 +31,71 @@ services:
       - ./data/crafty/config:/crafty/app/config
       - ./data/crafty/import:/crafty/import
     networks:
+      wardensmp:
+        aliases:
+          - minecraft
+
+  minetrax:
+    build:
+      context: ./minetrax
+      dockerfile: ./docker/Dockerfile
+    image: wardensmp/minetrax:8.0.0
+    container_name: wardensmp-minetrax
+    restart: unless-stopped
+    command: ["server"]
+    environment:
+      DB_HOST: minetrax-mysql
+      REDIS_HOST: minetrax-redis
+    volumes:
+      - ./minetrax/.env:/var/www/html/.env
+      - ./data/minetrax/storage-app:/var/www/html/storage/app
+      - ./data/minetrax/storage-logs:/var/www/html/storage/logs
+    depends_on:
+      - minetrax-mysql
+      - minetrax-redis
+    networks:
       - wardensmp
+
+  minetrax-mysql:
+    image: mysql/mysql-server:8.0
+    container_name: wardensmp-minetrax-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MINETRAX_DB_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: ${MINETRAX_DB_DATABASE}
+      MYSQL_USER: ${MINETRAX_DB_USERNAME}
+      MYSQL_PASSWORD: ${MINETRAX_DB_PASSWORD}
+    volumes:
+      - minetrax-mysql:/var/lib/mysql
+    networks:
+      wardensmp:
+        aliases:
+          - mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${MINETRAX_DB_PASSWORD}"]
+      retries: 3
+      timeout: 5s
+
+  minetrax-redis:
+    image: redis:alpine
+    container_name: wardensmp-minetrax-redis
+    restart: unless-stopped
+    volumes:
+      - minetrax-redis:/data
+    networks:
+      wardensmp:
+        aliases:
+          - redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      retries: 3
+      timeout: 5s
 
 networks:
   wardensmp:
     name: wardensmp
+
+volumes:
+  minetrax-mysql:
+  minetrax-redis:

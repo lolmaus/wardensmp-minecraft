@@ -9,11 +9,6 @@
         path: /etc/apt/sources.list.d/docker.list
         state: absent
 
-    - name: Remove stale Docker deb822 source file
-      ansible.builtin.file:
-        path: /etc/apt/sources.list.d/docker.sources
-        state: absent
-
     - name: Remove stale Docker gpg key
       ansible.builtin.file:
         path: /etc/apt/keyrings/docker.gpg
@@ -164,6 +159,16 @@
         - data/crafty/servers
         - data/crafty/config
         - data/crafty/import
+        - data/minetrax/storage-app
+        - data/minetrax/storage-logs
+
+    - name: Clone MineTrax repository
+      ansible.builtin.git:
+        repo: https://github.com/MineTrax/minetrax.git
+        dest: "{{ minecraft_stack_root }}/minetrax"
+        version: "{{ minetrax_version }}"
+        force: false
+      become_user: "{{ admin_user }}"
 
     - name: Copy Docker Compose file
       ansible.builtin.copy:
@@ -174,12 +179,24 @@
         mode: "0644"
 
     - name: Copy Compose environment file
-      ansible.builtin.template:
-        src: ../compose/.env.example
+      ansible.builtin.copy:
         dest: "{{ minecraft_stack_root }}/.env"
         owner: "{{ admin_user }}"
         group: "{{ admin_user }}"
-        mode: "0644"
+        mode: "0600"
+        content: |
+          TZ={{ server_timezone }}
+          MINETRAX_DB_DATABASE={{ minetrax_db_name }}
+          MINETRAX_DB_USERNAME={{ minetrax_db_user }}
+          MINETRAX_DB_PASSWORD={{ minetrax_db_password }}
+
+    - name: Copy MineTrax environment file
+      ansible.builtin.template:
+        src: ../templates/minetrax.env.j2
+        dest: "{{ minecraft_stack_root }}/minetrax/.env"
+        owner: "{{ admin_user }}"
+        group: "{{ admin_user }}"
+        mode: "0600"
 
     - name: Copy Caddyfile
       ansible.builtin.copy:
@@ -188,14 +205,22 @@
         owner: "{{ admin_user }}"
         group: "{{ admin_user }}"
         mode: "0644"
+      notify: Restart Caddy container
 
     - name: Start Docker Compose stack
       community.docker.docker_compose_v2:
         project_src: "{{ minecraft_stack_root }}"
         state: present
+        build: always
 
   handlers:
     - name: Restart ssh
       ansible.builtin.service:
         name: ssh
         state: restarted
+    - name: Restart Caddy container
+      ansible.builtin.command:
+        cmd: docker compose restart caddy
+        chdir: "{{ minecraft_stack_root }}"
+      become_user: "{{ admin_user }}"
+      changed_when: true

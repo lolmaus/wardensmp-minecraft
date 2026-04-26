@@ -1,1 +1,38 @@
 .history/
+
+# Local environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Secrets
+secrets
+secrets.*
+!secrets.example
+!secrets.*.example
+
+# Ansible
+*.retry
+.ansible/
+
+# Runtime data if the stack is ever run locally
+data/
+minetrax/
+
+# Backups, dumps, and generated archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.sql
+*.sql.gz
+*.dump
+*.bak
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
