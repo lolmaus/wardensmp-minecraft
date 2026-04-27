@@ -18,6 +18,8 @@ minetrax_version: "8.0.0"
 minetrax_app_name: "WardenSMP"
 minetrax_db_name: minetrax
 minetrax_db_user: minetrax
+minetrax_locale: ru
+minetrax_available_locales: ru,en
 
 allowed_tcp_ports:
   - 22
